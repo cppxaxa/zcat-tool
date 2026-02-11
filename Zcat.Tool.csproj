@@ -6,7 +6,7 @@
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>zcat</ToolCommandName>
     <PackageId>Zcat.Tool</PackageId>
-    <Version>0.0.1</Version>
+    <Version>0.0.2</Version>
     <Authors>cppxaxa</Authors>
     <Description>A powerful ZeroMQ CLI tool supporting multiple messaging patterns (PUB/SUB, REQ/REP, PUSH/PULL, DEALER/ROUTER)</Description>
     <PackageTags>zeromq;cli;messaging;netmq;pub-sub;request-reply</PackageTags>
