@@ -25,17 +25,44 @@ This project uses GitHub Actions for automated building, testing, and publishing
 - When you create a GitHub Release
 - Manual trigger via "workflow_dispatch"
 
+**Environment**: `production` - Allows for deployment protection rules and secrets scoping
+
 **What it does**:
 - ✅ Builds and tests
 - ✅ Creates NuGet package
-- ✅ Publishes to NuGet.org
+- ✅ Publishes to NuGet.org (using OIDC)
 - ✅ Uploads package as artifact
+
+**Badge**:
+```markdown
+![Publish](https://github.com/cppxaxa/zcat-tool/workflows/Publish%20to%20NuGet/badge.svg)
+```
 
 ---
 
 ## Setup Instructions
 
-### Recommended: Using Trusted Publishing (OIDC - No API Keys!)
+### Step 1: Configure GitHub Environment (Optional but Recommended)
+
+Using a `production` environment provides better security and control:
+
+1. **Create Production Environment**:
+   - Go to https://github.com/cppxaxa/zcat-tool/settings/environments
+   - Click "New environment"
+   - Name: `production`
+   - Click "Configure environment"
+
+2. **Add Protection Rules** (Optional):
+   - ✅ Required reviewers: Add yourself or team members
+   - ✅ Wait timer: Add delay before deployment
+   - ✅ Deployment branches: Only `main` branch
+
+3. **Add Environment Secret**:
+   - In the `production` environment settings
+   - Add secret: `NUGET_USER` = your NuGet.org username
+   - This scopes the secret to production deployments only
+
+### Step 2: Recommended - Using Trusted Publishing (OIDC - No API Keys!)
 
 This is the **most secure** method - no long-lived API keys needed!
 
