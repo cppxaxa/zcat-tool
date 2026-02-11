@@ -35,7 +35,33 @@ This project uses GitHub Actions for automated building, testing, and publishing
 
 ## Setup Instructions
 
-### Option 1: Using NuGet API Key (Current)
+### Recommended: Using Trusted Publishing (OIDC - No API Keys!)
+
+This is the **most secure** method - no long-lived API keys needed!
+
+1. **Add NuGet Username to GitHub Secrets**:
+   - Go to your repo: https://github.com/cppxaxa/zcat-tool
+   - Settings → Secrets and variables → Actions
+   - Click "New repository secret"
+   - Name: `NUGET_USER`
+   - Value: Your NuGet.org username (profile name, NOT email)
+   - Click "Add secret"
+
+2. **Configure Trusted Publishing on NuGet.org** (First-time only):
+   - Go to https://www.nuget.org/ and sign in
+   - Upload your package manually the FIRST time (see "First Publish" section below)
+   - After first publish, go to package settings
+   - Enable "Trusted Publishers"
+   - Add GitHub: Repository `cppxaxa/zcat-tool`, Workflow `publish.yml`
+
+3. **Done!**
+   - The workflow uses `NuGet/login@v1` to get a short-lived API key via OIDC
+   - No long-lived secrets to manage
+   - More secure than API keys
+
+### Alternative: Using NuGet API Key (Traditional)
+
+If Trusted Publishing isn't set up yet:
 
 1. **Get NuGet API Key**:
    - Go to https://www.nuget.org/
@@ -49,37 +75,31 @@ This project uses GitHub Actions for automated building, testing, and publishing
    - Go to your repo: https://github.com/cppxaxa/zcat-tool
    - Settings → Secrets and variables → Actions
    - Click "New repository secret"
-   - Name: `NUGET_API_KEY`
-   - Value: [paste your API key]
+   - Name: `NUGET_USER`
+   - Value: Your NuGet.org username
    - Click "Add secret"
 
-3. **Done!**
-   - Now when you create a GitHub Release, the package will auto-publish to NuGet
+3. **Temporary fallback** (if OIDC login fails):
+   - Add another secret: `NUGET_API_KEY` with your API key
+   - The workflow will use OIDC first, fallback to API key if needed
 
-### Option 2: Trusted Publishing (More Secure - Recommended)
+### First Publish (Required for Trusted Publishing)
 
-**NOTE**: NuGet Trusted Publishing is currently in beta. Check https://learn.microsoft.com/en-us/nuget/nuget-org/publish-a-package#trusted-publishing for availability.
+**Important**: You must publish v1.0.0 manually the FIRST time before Trusted Publishing works.
 
-When available:
+```bash
+# Local first-time publish
+cd /c/L1/zcat/zcat-tool
+dotnet pack -c Release
 
-1. **Configure NuGet.org**:
-   - Go to https://www.nuget.org/
-   - Navigate to your package settings
-   - Enable "Trusted Publishing"
-   - Add GitHub as trusted publisher
-   - Configure: `cppxaxa/zcat-tool` with workflow `publish.yml`
+# Get a temporary API key from nuget.org (30 days)
+# Then publish:
+dotnet nuget push bin/Release/Zcat.Tool.1.0.0.nupkg \
+  --api-key YOUR-TEMP-KEY \
+  --source https://api.nuget.org/v3/index.json
+```
 
-2. **Update workflow** (remove API key requirement):
-   ```yaml
-   - name: Publish to NuGet
-     run: |
-       dotnet nuget push ./artifacts/*.nupkg \
-         --source https://api.nuget.org/v3/index.json \
-         --skip-duplicate
-   ```
-
-3. **No secrets needed!**
-   - GitHub Actions will authenticate automatically via OIDC
+After this first publish, configure Trusted Publishing on NuGet.org, and all future releases will be automated!
 
 ---
 
@@ -200,16 +220,30 @@ ls -lh bin/Release/*.nupkg
 3. Expand failed step to see error
 4. Fix locally and push again
 
-### Publish fails with "401 Unauthorized"
+### Publish fails with "401 Unauthorized" (OIDC)
 
-1. **Check API Key**:
+1. **First publish must be manual**:
+   - You must publish v1.0.0 manually first
+   - Then configure Trusted Publishing on NuGet.org
+   - Future releases will work automatically
+
+2. **Check NUGET_USER secret**:
    - Go to Settings → Secrets → Actions
-   - Verify `NUGET_API_KEY` exists
-   - If expired, regenerate on NuGet.org and update secret
+   - Verify `NUGET_USER` exists and matches your NuGet.org username
+   - This should be your profile name, NOT your email
 
-2. **Check API Key Permissions**:
-   - Must have "Push" permission
-   - Must match package glob pattern
+3. **Check Trusted Publishing configuration on NuGet.org**:
+   - Go to package settings
+   - Verify "Trusted Publishers" includes:
+     - Repository: `cppxaxa/zcat-tool`
+     - Workflow: `publish.yml`
+
+### NuGet/login@v1 fails
+
+If the OIDC login step fails:
+- Verify `id-token: write` permission is set in workflow
+- Check that `NUGET_USER` secret is correctly set
+- Ensure package exists on NuGet (manual first publish required)
 
 ### Package not appearing on NuGet
 
