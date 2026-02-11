@@ -13,9 +13,14 @@
     <PackageProjectUrl>https://github.com/cppxaxa/zcat-tool</PackageProjectUrl>
     <RepositoryUrl>https://github.com/cppxaxa/zcat-tool</RepositoryUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="NetMQ" Version="4.0.1.13" />
