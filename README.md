@@ -1,5 +1,9 @@
 # zcat - ZeroMQ CLI Tool
 
+![Build](https://github.com/cppxaxa/zcat-tool/workflows/Build%20and%20Test/badge.svg)
+[![NuGet](https://img.shields.io/nuget/v/Zcat.Tool.svg)](https://www.nuget.org/packages/Zcat.Tool/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 A powerful command-line tool for interacting with ZeroMQ messaging patterns. Send and receive messages using PUB/SUB, REQ/REP, PUSH/PULL patterns with timeout support, message limits, and graceful shutdown.
 
 ## Features
