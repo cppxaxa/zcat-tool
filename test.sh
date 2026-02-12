@@ -23,7 +23,7 @@ echo
 
 # Test 4: Package exists
 echo "✅ Test 4: Package file exists"
-[ -f "bin/Release/Zcat.Tool.1.0.0.nupkg" ] && echo "   PASS" || echo "   FAIL"
+[ -f "bin/Release/Zcat.Tool.0.0.2.nupkg" ] && echo "   PASS" || echo "   FAIL"
 echo
 
 # Test 5: All commands show in help

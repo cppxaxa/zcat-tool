@@ -110,23 +110,32 @@ public static class Program
 
         Console.WriteLine("## BASIC TEST");
         Console.WriteLine();
-        Console.WriteLine("  Terminal 1 - Subscriber:");
+        Console.WriteLine("  Terminal 1 - Publisher (bind first!):");
+        Console.WriteLine("    zcat pub tcp://*:5556 --bind");
+        Console.WriteLine();
+        Console.WriteLine("  Terminal 2 - Subscriber:");
         Console.WriteLine("    zcat sub tcp://localhost:5556 --timeout 10");
         Console.WriteLine();
-        Console.WriteLine("  Terminal 2 - Publisher:");
-        Console.WriteLine("    echo \"Hello ZeroMQ!\" | zcat pub tcp://localhost:5556");
+        Console.WriteLine("  Terminal 1 - Send message:");
+        Console.WriteLine("    (Type) Hello ZeroMQ!");
         Console.WriteLine();
-        Console.WriteLine("  You should see \"Hello ZeroMQ!\" in Terminal 1!");
+        Console.WriteLine("  You should see \"Hello ZeroMQ!\" in Terminal 2!");
+        Console.WriteLine();
+        Console.WriteLine("  NOTE: Start the publisher FIRST with --bind, then start the subscriber.");
+        Console.WriteLine("        Wait 1-2 seconds after starting the subscriber before sending messages.");
         Console.WriteLine();
 
         Console.WriteLine("## ALL PATTERNS");
         Console.WriteLine();
         Console.WriteLine("### PUB/SUB (1-to-many broadcast)");
-        Console.WriteLine("  Terminal 1:");
+        Console.WriteLine("  Terminal 1 - Publisher:");
+        Console.WriteLine("    zcat pub tcp://*:5556 --bind");
+        Console.WriteLine();
+        Console.WriteLine("  Terminal 2 - Subscriber:");
         Console.WriteLine("    zcat sub tcp://localhost:5556 --topic weather");
         Console.WriteLine();
-        Console.WriteLine("  Terminal 2:");
-        Console.WriteLine("    echo \"weather sunny 25C\" | zcat pub tcp://localhost:5556");
+        Console.WriteLine("  Terminal 1 - Send (wait 1-2 sec after starting subscriber):");
+        Console.WriteLine("    (Type) weather sunny 25C");
         Console.WriteLine();
 
         Console.WriteLine("### REQ/REP (request-reply)");

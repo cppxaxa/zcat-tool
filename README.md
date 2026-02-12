@@ -78,9 +78,35 @@ zcat <command> [address] [options]
 
 ## Examples
 
+### Quick Test (PUB/SUB)
+
+**Important:** Start the publisher FIRST with `--bind`, then start subscriber(s). Wait 1-2 seconds after subscribers connect before sending messages (this avoids the ZeroMQ "slow joiner" problem).
+
+```bash
+# Terminal 1 - Start publisher (bind first!)
+zcat pub tcp://*:5556 --bind
+
+# Terminal 2 - Start subscriber
+zcat sub tcp://localhost:5556 --timeout 30
+
+# Terminal 1 - Send messages (wait 1-2 sec after subscriber starts)
+# Type messages and press Enter
+Hello ZeroMQ!
+Testing 123
+```
+
 ### Publisher/Subscriber Pattern
 
-**Terminal 1 - Start subscriber:**
+**Terminal 1 - Start publisher (bind):**
+```bash
+# Bind and publish
+zcat pub tcp://*:5556 --bind
+
+# Publish with topic prefix
+zcat pub tcp://*:5556 --bind --topic weather
+```
+
+**Terminal 2 - Start subscriber (connect):**
 ```bash
 # Subscribe to all messages
 zcat sub tcp://localhost:5556
@@ -93,18 +119,6 @@ zcat sub tcp://localhost:5556 --topic weather
 
 # Exit after 100 messages
 zcat sub tcp://localhost:5556 --count 100
-```
-
-**Terminal 2 - Start publisher:**
-```bash
-# Publish from stdin
-echo "Hello ZeroMQ" | zcat pub tcp://localhost:5556
-
-# Publish with topic prefix
-echo "sunny 25C" | zcat pub tcp://localhost:5556 --topic weather
-
-# Bind mode (server)
-zcat pub tcp://*:5556 --bind
 ```
 
 ### Request/Reply Pattern
@@ -219,12 +233,31 @@ zcat pub tcp://*:5556 --bind
 zcat pub tcp://localhost:5556
 ```
 
-### No messages received
+### No messages received (PUB/SUB)
 
+This is often due to the **ZeroMQ "slow joiner" problem**:
+
+1. **Always start the publisher FIRST** with `--bind`
+2. Then start subscriber(s) with `--connect` (default)
+3. **Wait 1-2 seconds** after subscribers connect before sending messages
+4. Verify topic filters match
+5. Try `--verbose` mode to see connection status
+
+```bash
+# Correct order:
+# Terminal 1
+zcat pub tcp://*:5556 --bind
+
+# Terminal 2 (wait for publisher to be ready)
+zcat sub tcp://localhost:5556
+
+# Terminal 1 (wait 1-2 seconds after subscriber starts, then type)
+Hello!
+```
+
+Other checks:
 - Check firewall settings
-- Ensure publisher starts before subscriber (or add delay)
-- Verify topic filters match
-- Try `--verbose` mode
+- Ensure addresses match (localhost vs 0.0.0.0 vs *)
 
 ### Messages not load balancing
 

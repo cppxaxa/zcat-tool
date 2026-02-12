@@ -88,8 +88,13 @@ public static class ZeroMqHandlers
 
             LogInfo(options, $"Publishing on {options.Address} (mode={(options.Bind ? "bind" : "connect")})");
 
-            // Give subscribers time to connect
-            Thread.Sleep(100);
+            if (!options.Quiet && options.Bind)
+            {
+                Console.Error.WriteLine("NOTE: Wait 1-2 seconds after subscribers connect before sending messages.");
+            }
+
+            // Give subscribers time to connect (slow joiner problem mitigation)
+            Thread.Sleep(500);
 
             int messageCount = 0;
 
