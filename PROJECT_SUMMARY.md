@@ -33,10 +33,16 @@ zcat-tool/
 ├── ZeroMqHandlers.cs       # ZeroMQ pattern implementations
 ├── Zcat.Tool.csproj        # Project file with PackAsTool configuration
 ├── nuget.config            # NuGet sources configuration
-├── README.md               # Complete documentation
-├── STEPS.md                # Packaging & publishing guide
+├── README.md               # Complete user documentation
+├── PROJECT_SUMMARY.md      # Project overview and technical details
+├── PUBSUB_FIX.md          # Documentation of PUB/SUB slow joiner fix
+├── test.sh                 # Automated test script
 ├── LICENSE                 # MIT license
-└── .gitignore              # Git ignore rules
+├── .gitignore              # Git ignore rules
+└── .github/
+    └── workflows/
+        ├── build.yml       # Build workflow (manual trigger only)
+        └── publish.yml     # Publish to NuGet on release
 ```
 
 ## Technology Stack
@@ -72,14 +78,22 @@ Initially planned to use Bullseye for CLI, but switched to simple argument parsi
 
 ## Usage Examples
 
-### Basic Pub/Sub
-```bash
-# Terminal 1
-zcat sub tcp://localhost:5556
+### Basic Pub/Sub (IMPORTANT: Read the note!)
 
-# Terminal 2
-echo "Hello!" | zcat pub tcp://localhost:5556
+**Note**: Due to ZeroMQ's "slow joiner" problem, the publisher must bind first and you must wait 1-2 seconds after the subscriber connects before sending messages.
+
+```bash
+# Terminal 1 - Publisher (bind first!)
+zcat pub tcp://*:5556 --bind
+
+# Terminal 2 - Subscriber
+zcat sub tcp://localhost:5556 --timeout 30
+
+# Terminal 1 - Wait 1-2 seconds, then type messages
+Hello!
 ```
+
+See [PUBSUB_FIX.md](PUBSUB_FIX.md) for detailed explanation.
 
 ### With Timeout
 ```bash
@@ -127,12 +141,27 @@ dotnet tool install --global Zcat.Tool
 
 ## Publishing to NuGet
 
-See [STEPS.md](STEPS.md) for detailed instructions on:
-1. Getting NuGet API key
-2. Updating version
-3. Packing the tool
-4. Publishing to NuGet.org
-5. CI/CD automation
+### GitHub Actions Workflow
+
+The project uses GitHub Actions with Trusted Publishing (OIDC):
+
+1. **Setup**: Add `NUGET_USER` secret in GitHub repository settings
+2. **Configure Trusted Publishing** on NuGet.org (after first manual publish)
+3. **Create GitHub Release**: Automatically triggers publish workflow
+4. **Manual publish**: Use workflow_dispatch if needed
+
+### Manual Publishing
+
+```bash
+# Update version in Zcat.Tool.csproj
+# Build and pack
+dotnet pack -c Release
+
+# Publish to NuGet
+dotnet nuget push bin/Release/Zcat.Tool.*.nupkg \
+  --api-key YOUR_API_KEY \
+  --source https://api.nuget.org/v3/index.json
+```
 
 ## What's Different from Original Design
 
@@ -142,6 +171,8 @@ See [STEPS.md](STEPS.md) for detailed instructions on:
 3. ✅ **Better error handling**: Try-catch with proper exit codes
 4. ✅ **Embedded quick start**: Built into CLI with `--quickstart` flag
 5. ✅ **Enhanced documentation**: More examples and use cases
+6. ✅ **Fixed PUB/SUB slow joiner**: Publisher binds first, added delays
+7. ✅ **GitHub Actions**: CI/CD with Trusted Publishing (OIDC)
 
 ### Kept from Original:
 - ✅ Timeout support
@@ -179,7 +210,12 @@ dotnet run -- sub tcp://localhost:5556 --help
 ### Pack
 ```bash
 dotnet pack -c Release
-# Creates: bin/Release/Zcat.Tool.1.0.0.nupkg
+# Creates: bin/Release/Zcat.Tool.0.0.3.nupkg
+```
+
+### Run tests
+```bash
+./test.sh
 ```
 
 ## License
@@ -194,8 +230,8 @@ Built with:
 
 ---
 
-**Status**: ✅ Ready for local testing and NuGet publishing
+**Status**: ✅ Ready for testing and NuGet publishing (v0.0.3)
 
-**Package**: `bin/Release/Zcat.Tool.1.0.0.nupkg`
+**Repository**: https://github.com/cppxaxa/zcat-tool
 
-**Next Action**: Follow [STEPS.md](STEPS.md) to publish to NuGet.org
+**Next Action**: Create GitHub Release to trigger automatic NuGet publish
